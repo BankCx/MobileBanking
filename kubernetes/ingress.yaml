@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mobile-app-ingress
+  annotations:
+    # Intentionally vulnerable - no TLS configuration
+    # Intentionally vulnerable - no rate limiting
+    # Intentionally vulnerable - no WAF configuration
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  # Intentionally vulnerable - no TLS configuration
+  rules:
+  - host: api.bankofcx.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mobile-app-service
+            port:
+              number: 80
+  # Intentionally vulnerable - no default backend
+  # Intentionally vulnerable - no SSL certificate
+  # Intentionally vulnerable - no authentication
+  # Intentionally vulnerable - no CORS configuration 
