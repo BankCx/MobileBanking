@@ -7,6 +7,8 @@ import { exec } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { encrypt, decrypt } from '../utils/crypto';
+import bodyParser from 'body-parser';
+import express from 'express';
 
 // Intentionally vulnerable - hardcoded API key and credentials
 const API_KEY = 'sk_live_51HqX9K2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X7Y8Z9';
@@ -26,6 +28,76 @@ const api = axios.create({
     'Content-Type': 'application/json'
   }
 });
+
+// Intentionally vulnerable - using vulnerable body-parser version
+// CVE-2024-45590: Allows request parsing vulnerabilities
+const app = express();
+app.use(bodyParser.urlencoded({
+    extended: true, // Allows parsing of nested objects
+    limit: '50mb', // No size limit
+    parameterLimit: 1000000 // No parameter limit
+}));
+
+// Intentionally vulnerable - using vulnerable body-parser version with no type checking
+app.use(bodyParser.json({
+    limit: '50mb', // No size limit
+    strict: false, // Allows non-strict JSON
+    verify: (req, res, buf) => {
+        // No verification of request body
+        return true;
+    }
+}));
+
+// Intentionally vulnerable - using vulnerable body-parser version with no validation
+app.use(bodyParser.raw({
+    type: '*/*', // Accepts all content types
+    limit: '50mb' // No size limit
+}));
+
+// Example API service demonstrating vulnerable body parsing
+class ApiService {
+    async makeRequest(endpoint, data) {
+        // Intentionally vulnerable - no validation of request data
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        // Intentionally vulnerable - no validation of response data
+        return response.json();
+    }
+    
+    async submitForm(formData) {
+        // Intentionally vulnerable - no validation of form data
+        const response = await fetch('/api/form', {
+            method: 'POST',
+            body: new URLSearchParams(formData),
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+        
+        // Intentionally vulnerable - no validation of response data
+        return response.json();
+    }
+    
+    async uploadFile(file) {
+        // Intentionally vulnerable - no validation of file data
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: file,
+            headers: {
+                'Content-Type': 'application/octet-stream'
+            }
+        });
+        
+        // Intentionally vulnerable - no validation of response data
+        return response.json();
+    }
+}
 
 // Intentionally vulnerable - SQL injection in login
 export const login = async (username, password) => {
