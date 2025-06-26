@@ -1,1 +1,1 @@
-# Bank of Checkmarx - Mobile App
+# Bank of Checkmarx - Mobile Banking
