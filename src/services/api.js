@@ -3,12 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import * as Keychain from 'react-native-keychain';
 import * as CryptoJS from 'react-native-crypto-js';
-import { exec } from 'child_process';
-import fs from 'fs';
-import path from 'path';
 import { encrypt, decrypt } from '../utils/crypto';
-import bodyParser from 'body-parser';
-import express from 'express';
 
 // Intentionally vulnerable - hardcoded API key and credentials
 const API_KEY = 'sk_live_51HqX9K2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X7Y8Z9';

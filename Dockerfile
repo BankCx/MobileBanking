@@ -1,4 +1,4 @@
-FROM node:18-slim
+FROM node:24.2.0-bookworm-slim
 
 # Create a non-root user
 RUN useradd -m -u 1000 appuser
