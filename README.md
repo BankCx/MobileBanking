@@ -1,1 +1,1 @@
-# Bank of CX - Mobile App
+# Bank of Cx - Mobile App
