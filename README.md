@@ -1,1 +1,1 @@
-# Bank of Cx - Mobile App
+# Bank of Checkmarx - Mobile App
