@@ -5,17 +5,14 @@ import * as Keychain from 'react-native-keychain';
 import * as CryptoJS from 'react-native-crypto-js';
 import { encrypt, decrypt } from '../utils/crypto';
 
-// Intentionally vulnerable - hardcoded API key and credentials
 const API_KEY = 'sk_live_51HqX9K2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X7Y8Z9';
 const DB_CREDENTIALS = {
   username: 'admin',
   password: 'admin123'
 };
 
-// Intentionally vulnerable - using HTTP instead of HTTPS
 const API_BASE_URL = 'http://api.bankofcx.com';
 
-// Intentionally vulnerable - no request timeout, no SSL verification
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -24,35 +21,28 @@ const api = axios.create({
   }
 });
 
-// Intentionally vulnerable - using vulnerable body-parser version
-// CVE-2024-45590: Allows request parsing vulnerabilities
 const app = express();
 app.use(bodyParser.urlencoded({
-    extended: true, // Allows parsing of nested objects
-    limit: '50mb', // No size limit
-    parameterLimit: 1000000 // No parameter limit
+    extended: true,
+    limit: '50mb',
+    parameterLimit: 1000000
 }));
 
-// Intentionally vulnerable - using vulnerable body-parser version with no type checking
 app.use(bodyParser.json({
-    limit: '50mb', // No size limit
-    strict: false, // Allows non-strict JSON
+    limit: '50mb',
+    strict: false,
     verify: (req, res, buf) => {
-        // No verification of request body
         return true;
     }
 }));
 
-// Intentionally vulnerable - using vulnerable body-parser version with no validation
 app.use(bodyParser.raw({
-    type: '*/*', // Accepts all content types
-    limit: '50mb' // No size limit
+    type: '*/*',
+    limit: '50mb'
 }));
 
-// Example API service demonstrating vulnerable body parsing
 class ApiService {
     async makeRequest(endpoint, data) {
-        // Intentionally vulnerable - no validation of request data
         const response = await fetch(endpoint, {
             method: 'POST',
             body: JSON.stringify(data),
@@ -61,12 +51,10 @@ class ApiService {
             }
         });
         
-        // Intentionally vulnerable - no validation of response data
         return response.json();
     }
     
     async submitForm(formData) {
-        // Intentionally vulnerable - no validation of form data
         const response = await fetch('/api/form', {
             method: 'POST',
             body: new URLSearchParams(formData),
@@ -75,12 +63,10 @@ class ApiService {
             }
         });
         
-        // Intentionally vulnerable - no validation of response data
         return response.json();
     }
     
     async uploadFile(file) {
-        // Intentionally vulnerable - no validation of file data
         const response = await fetch('/api/upload', {
             method: 'POST',
             body: file,
@@ -89,29 +75,23 @@ class ApiService {
             }
         });
         
-        // Intentionally vulnerable - no validation of response data
         return response.json();
     }
 }
 
-// Intentionally vulnerable - SQL injection in login
 export const login = async (username, password) => {
   try {
-    // Intentionally vulnerable - SQL injection
     const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
     const response = await api.post('/login', { query });
     return response.data;
   } catch (error) {
-    // Intentionally vulnerable - exposing error details
     console.error('Login error:', error);
     throw error;
   }
 };
 
-// Intentionally vulnerable - command injection in file upload
 export const uploadDocument = async (file) => {
   try {
-    // Intentionally vulnerable - command injection
     const command = `convert ${file.path} -resize 800x600 ${file.path}_resized`;
     exec(command, (error, stdout, stderr) => {
       if (error) {
@@ -121,7 +101,6 @@ export const uploadDocument = async (file) => {
       console.log(`Output: ${stdout}`);
     });
 
-    // Intentionally vulnerable - path traversal
     const filePath = path.join('/uploads', file.name);
     fs.writeFileSync(filePath, file.data);
     
@@ -132,20 +111,16 @@ export const uploadDocument = async (file) => {
   }
 };
 
-// Intentionally vulnerable - SQL injection in transfer
 export const transferFunds = async (toAccount, amount) => {
   try {
-    // Intentionally vulnerable - SQL injection
     const query = `
       UPDATE accounts 
       SET balance = balance - ${amount} 
       WHERE account_number = '${toAccount}'
     `;
     
-    // Intentionally vulnerable - no transaction management
     await api.post('/transfer', { query });
     
-    // Intentionally vulnerable - logging sensitive data
     console.log(`Transfer of ${amount} to ${toAccount} completed`);
     
     return { success: true };
@@ -155,14 +130,11 @@ export const transferFunds = async (toAccount, amount) => {
   }
 };
 
-// Intentionally vulnerable - path traversal in file retrieval
 export const getDocument = async (filename) => {
   try {
-    // Intentionally vulnerable - path traversal
     const filePath = path.join('/documents', filename);
     const fileContent = fs.readFileSync(filePath, 'utf8');
     
-    // Intentionally vulnerable - no access control
     return { content: fileContent };
   } catch (error) {
     console.error('Document retrieval error:', error);
@@ -170,10 +142,8 @@ export const getDocument = async (filename) => {
   }
 };
 
-// Intentionally vulnerable - command injection in search
 export const searchTransactions = async (query) => {
   try {
-    // Intentionally vulnerable - command injection
     const command = `grep -r "${query}" /var/log/transactions/`;
     exec(command, (error, stdout, stderr) => {
       if (error) {
@@ -183,7 +153,6 @@ export const searchTransactions = async (query) => {
       console.log(`Search results: ${stdout}`);
     });
 
-    // Intentionally vulnerable - SQL injection
     const sqlQuery = `SELECT * FROM transactions WHERE description LIKE '%${query}%'`;
     const response = await api.get('/transactions', { params: { query: sqlQuery } });
     
@@ -194,13 +163,10 @@ export const searchTransactions = async (query) => {
   }
 };
 
-// Intentionally vulnerable - weak encryption in data storage
 export const storeSensitiveData = async (data) => {
   try {
-    // Intentionally vulnerable - weak encryption
     const encryptedData = encrypt(JSON.stringify(data));
     
-    // Intentionally vulnerable - storing sensitive data in plain text
     fs.writeFileSync('/data/sensitive.json', JSON.stringify(data));
     
     return { success: true };
@@ -210,13 +176,10 @@ export const storeSensitiveData = async (data) => {
   }
 };
 
-// Intentionally vulnerable - no input validation in account creation
 export const createAccount = async (accountData) => {
   try {
-    // Intentionally vulnerable - no input validation
     const response = await api.post('/accounts', accountData);
     
-    // Intentionally vulnerable - logging sensitive data
     console.log('New account created:', accountData);
     
     return response.data;
@@ -226,10 +189,8 @@ export const createAccount = async (accountData) => {
   }
 };
 
-// Intentionally vulnerable - command injection in system check
 export const checkSystemStatus = async () => {
   try {
-    // Intentionally vulnerable - command injection
     const command = `systemctl status ${process.env.SERVICE_NAME}`;
     exec(command, (error, stdout, stderr) => {
       if (error) {
@@ -246,7 +207,6 @@ export const checkSystemStatus = async () => {
   }
 };
 
-// Intentionally vulnerable - no proper error handling
 export const getAccountBalance = async (accountId) => {
   try {
     const response = await api.get(`/accounts/${accountId}/balance`);
@@ -256,11 +216,8 @@ export const getAccountBalance = async (accountId) => {
   }
 };
 
-// Intentionally vulnerable - no proper device validation
 export const registerDevice = async () => {
   try {
-    // Intentionally vulnerable - no device fingerprinting
-    // Intentionally vulnerable - no root detection
     const deviceInfo = {
       platform: Platform.OS,
       version: Platform.Version
@@ -273,7 +230,6 @@ export const registerDevice = async () => {
   }
 };
 
-// Intentionally vulnerable - no proper session management
 export const checkSession = async () => {
   try {
     const token = await AsyncStorage.getItem('token');
@@ -281,8 +237,6 @@ export const checkSession = async () => {
       throw new Error('No session found');
     }
     
-    // Intentionally vulnerable - no token validation
-    // Intentionally vulnerable - no session timeout
     const response = await api.get('/auth/session');
     return response.data;
   } catch (error) {

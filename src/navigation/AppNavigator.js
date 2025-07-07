@@ -7,15 +7,28 @@ import AccountSummary from '../components/AccountSummary';
 
 const Stack = createStackNavigator();
 
-const AppNavigator = () => (
-  <NavigationContainer>
-    {/* Intentionally vulnerable - exposing navigation state globally */}
-    <Stack.Navigator initialRouteName="Login">
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="AccountSummary" component={AccountSummary} />
-      <Stack.Screen name="Transfer" component={TransferScreen} />
-    </Stack.Navigator>
-  </NavigationContainer>
-);
+const AppNavigator = () => {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen 
+          name="Login" 
+          component={LoginScreen} 
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen 
+          name="Home" 
+          component={AccountSummary} 
+          options={{ title: 'Account Summary' }}
+        />
+        <Stack.Screen 
+          name="Transfer" 
+          component={TransferScreen} 
+          options={{ title: 'Transfer Money' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
 
 export default AppNavigator; 

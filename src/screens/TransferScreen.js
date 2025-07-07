@@ -1,42 +1,90 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Alert } from 'react-native';
-import api from '../services/api';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { transferMoney } from '../services/api';
 
 const TransferScreen = () => {
-  const [toAccount, setToAccount] = useState('');
+  const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // Intentionally vulnerable - no input validation, no authentication check
   const handleTransfer = async () => {
     try {
-      // Intentionally vulnerable - leaking sensitive info in alert
-      const response = await api.transferFunds(toAccount, amount);
-      Alert.alert('Transfer Success', JSON.stringify(response));
-    } catch (err) {
-      // Intentionally vulnerable - exposing error details
-      Alert.alert('Transfer Failed', err.message);
+      setLoading(true);
+      const response = await transferMoney(recipient, parseFloat(amount));
+      Alert.alert('Success', `Transfer completed! Transaction ID: ${response.transactionId}`);
+    } catch (error) {
+      Alert.alert('Error', `Transfer failed: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-      <Text style={{ fontSize: 24, marginBottom: 20 }}>Transfer Funds</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Transfer Money</Text>
+      
       <TextInput
-        placeholder="To Account"
-        value={toAccount}
-        onChangeText={setToAccount}
-        style={{ borderWidth: 1, marginBottom: 10, padding: 8 }}
+        style={styles.input}
+        placeholder="Recipient Account Number"
+        value={recipient}
+        onChangeText={setRecipient}
       />
+      
       <TextInput
+        style={styles.input}
         placeholder="Amount"
         value={amount}
         onChangeText={setAmount}
         keyboardType="numeric"
-        style={{ borderWidth: 1, marginBottom: 20, padding: 8 }}
       />
-      <Button title="Transfer" onPress={handleTransfer} />
+      
+      <TouchableOpacity
+        style={[styles.button, loading && styles.buttonDisabled]}
+        onPress={handleTransfer}
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>
+          {loading ? 'Processing...' : 'Transfer'}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 30,
+    textAlign: 'center',
+  },
+  input: {
+    backgroundColor: 'white',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
 
 export default TransferScreen; 

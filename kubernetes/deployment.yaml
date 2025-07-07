@@ -1,56 +1,46 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mobile-app
+  name: mobile-banking
   labels:
-    app: mobile-app
+    app: mobile-banking
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: mobile-app
+      app: mobile-banking
   template:
     metadata:
       labels:
-        app: mobile-app
+        app: mobile-banking
     spec:
-      # Intentionally vulnerable - no security context
       containers:
-      - name: mobile-app
-        image: mobile-app:latest
-        # Intentionally vulnerable - privileged container
-        securityContext:
-          privileged: true
-          allowPrivilegeEscalation: true
-          runAsUser: 0
-        # Intentionally vulnerable - no resource limits
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "250m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        # Intentionally vulnerable - mounting sensitive directories
-        volumeMounts:
-        - name: host-path
-          mountPath: /host
-        - name: secrets
-          mountPath: /secrets
-        # Intentionally vulnerable - no liveness/readiness probes
+      - name: mobile-banking
+        image: mobile-banking:latest
+        ports:
+        - containerPort: 8081
         env:
-        - name: NODE_ENV
+        - name: API_URL
+          value: "http://api.bankofcheckmarx.com"
+        - name: ENVIRONMENT
           value: "production"
-        - name: API_KEY
-          value: "sk_live_51HqX9K2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X7Y8Z9"
-        - name: DB_PASSWORD
-          value: "admin123"
-      # Intentionally vulnerable - no pod security context
+        volumeMounts:
+        - name: app-storage
+          mountPath: /app/data
       volumes:
-      - name: host-path
-        hostPath:
-          path: /
-      - name: secrets
-        secret:
-          secretName: app-secrets
-          # Intentionally vulnerable - no default mode 
+      - name: app-storage
+        persistentVolumeClaim:
+          claimName: app-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mobile-banking-service
+spec:
+  selector:
+    app: mobile-banking
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8081
+  type: LoadBalancer 
