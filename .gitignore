@@ -8,8 +8,6 @@ yarn-error.log*
 npm-debug.log*
 
 # Dependency directories
-yarn.lock
-package-lock.json
 
 # Metro
 .expo/
